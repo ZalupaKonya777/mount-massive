@@ -1,0 +1,20 @@
+{
+  "id": "./",
+  "name": "Mount Massive · Прибытие",
+  "short_name": "Mount Massive",
+  "lang": "ru",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#080e0c",
+  "theme_color": "#0b1512",
+  "icons": [
+    {
+      "src": "icon512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,159 @@
+{
+  "engine": "Godot 4.3 stable",
+  "build_version": "8abbddbe10c0",
+  "revision": 2,
+  "ending_revision": 3,
+  "single_threaded": true,
+  "texture_size_limit": 512,
+  "canvas_pixel_ratio_cap": 1.0,
+  "mobile_3d_scale": 1.0,
+  "web_audio_playback": "Godot Stream mixer",
+  "pack_checks": 103,
+  "touch_checks": 32,
+  "files": {
+    "ASSET_CREDITS.md": {
+      "bytes": 7844,
+      "sha256": "564572fdaa0f6c6b16da917cb4b799c7338fdeae307e71a89ee50daac85f2419"
+    },
+    "audio-unlock.wav": {
+      "bytes": 844,
+      "sha256": "2eeb55e08e1a51af2003fabdfc8572539de6c3f0fa1c182a5b3d3a4806b84db5"
+    },
+    "index.pck": {
+      "bytes": 72584448,
+      "sha256": "4506474ddb3571a70d87c2981845db754cd26ac3a06fe1f607011ff0f5279704"
+    },
+    "index.html": {
+      "bytes": 8236,
+      "sha256": "0bbf794bbd5992b533fa7bc64c07bdf1a9fb05162dd79d32b8aa357999909c0f"
+    },
+    "index.wasm": {
+      "bytes": 35376909,
+      "sha256": "fe5cebc590758c10bc4469be5a591e28edbde5ec8f458f21baeb83db50d028b9"
+    },
+    "sw.js": {
+      "bytes": 166,
+      "sha256": "a5b45e8b55f3ded9c19f063591244724aebbdeb05305a209d62afd5db2bf0eca"
+    },
+    "index.png": {
+      "bytes": 21443,
+      "sha256": "3cb4495c0b98dfbe4b663cbf2b6836473572339beb66d902367893162a70be0e"
+    },
+    "icon512.png": {
+      "bytes": 11574,
+      "sha256": "6ba07fa0f3e9304f17260d51d2105280bb0d178d7627751f0f4d4e83155517e8"
+    },
+    "index.apple-touch-icon.png": {
+      "bytes": 3930,
+      "sha256": "dffb8a0a526b712f14836180dee829d672ac35e88be3fdcda3bd0df8ec9f2b5c"
+    },
+    "manifest.webmanifest": {
+      "bytes": 402,
+      "sha256": "f6d3a401e5a846176884b6835406aa13ac52c6833d6dede6a848e8a75f5f143c"
+    },
+    "GODOT_THIRD_PARTY_NOTICES.txt": {
+      "bytes": 88631,
+      "sha256": "44f094135d3b797511c3a013438dfc02446113f329c591c9aebae79d73171e68"
+    },
+    "mobile_audio.js": {
+      "bytes": 6170,
+      "sha256": "f5ce361611790058bc4aded3010f03e35981ffb19c4c656b1e8a819b50ed1a5c"
+    },
+    "FONT_LICENSE.txt": {
+      "bytes": 3859,
+      "sha256": "63d3ba759d12804c5b31a9d5940d855c1820d1f5999e6b0872eb1c7ff045fbc9"
+    },
+    "index.js": {
+      "bytes": 331495,
+      "sha256": "8b649683883a8be172e229a0479503d50cd5245ebf87aa71fda70bf720824075"
+    },
+    "index.audio.worklet.js": {
+      "bytes": 7298,
+      "sha256": "5b476a9c9ce642c0ee4256436d1bc31d9c38f868aca0f9a8e2a57c18d2dec2a3"
+    },
+    "index.icon.png": {
+      "bytes": 11574,
+      "sha256": "6ba07fa0f3e9304f17260d51d2105280bb0d178d7627751f0f4d4e83155517e8"
+    },
+    "apple-touch-icon.png": {
+      "bytes": 7678,
+      "sha256": "a96bf13d6a2c92abf988dfcffcd5b3e28ded2389e3cfe18575b75ebc5d3b5200"
+    }
+  },
+  "device_tested": false,
+  "web_cull_threshold": 1000000,
+  "browser_checks": {
+    "chromium": {
+      "passed": 33,
+      "physical_phone_tested": false,
+      "tested_utc": "2026-10-21T18:38:24.992Z",
+      "known_webkit_gl_diagnostics": 0,
+      "rendered_room_frames": {
+        "normal": {
+          "mean": [
+            22.15283203125,
+            16.6025390625,
+            9.49951171875
+          ],
+          "variance": 816.2697998682659,
+          "sha256": "e6310f40229e99493e147d5abd52fcaa5e59c92ff6c38c5e412546a255ad08df"
+        },
+        "night_vision": {
+          "mean": [
+            27.9580078125,
+            48.40380859375,
+            42.24169921875
+          ],
+          "variance": 2658.3435359530977,
+          "sha256": "76eaf6508a8d12b9b9cca6cb9f5763f7aad1500c650297dc6fadac935d3dff17"
+        }
+      },
+      "output_peaks": {
+        "camera": 0.026214599609375,
+        "wind": 0.01202392578125,
+        "steps": 0.1065673828125,
+        "door": 0.0379486083984375,
+        "ventilation": 0.0686798095703125,
+        "recovered": 0.0687408447265625,
+        "ending": 0.65936279296875
+      }
+    },
+    "webkit": {
+      "passed": 33,
+      "physical_phone_tested": false,
+      "tested_utc": "2026-10-21T18:40:16.033Z",
+      "known_webkit_gl_diagnostics": 22,
+      "rendered_room_frames": {
+        "normal": {
+          "mean": [
+            23.654296875,
+            18.1328125,
+            10.8662109375
+          ],
+          "variance": 838.8056563271416,
+          "sha256": "65fb1a4ea9bc43c82b33242d3077f005b2d93ede7613de57a691d7de8cb4a08b"
+        },
+        "night_vision": {
+          "mean": [
+            29.00439453125,
+            49.5380859375,
+            43.244140625
+          ],
+          "variance": 2654.4417183929017,
+          "sha256": "25bf67069a9807ee1764df0c32a47e73aea97e36b50924e5b69a4ee753c04b09"
+        }
+      },
+      "output_peaks": {
+        "camera": 0.015228271484375,
+        "wind": 0.0154571533203125,
+        "steps": 0.1140899658203125,
+        "door": 0.0444793701171875,
+        "ventilation": 0.0565185546875,
+        "recovered": 0.0731353759765625,
+        "ending": 0.6613006591796875
+      }
+    }
+  },
+  "play_url": "https://zalupakonya777.github.io/mount-massive/",
+  "published_utc": "2026-10-21T18:40:30Z"
+}
