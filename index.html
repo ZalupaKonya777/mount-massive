@@ -159,7 +159,7 @@ body {
 
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":86437088,"index.wasm":35376909},"focusCanvas":true,"gdextensionLibs":[]};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":86437056,"index.wasm":35376909},"focusCanvas":true,"gdextensionLibs":[]};
 const GODOT_THREADS_ENABLED = false;
 
 (function () {
@@ -191,7 +191,7 @@ const GODOT_THREADS_ENABLED = false;
 	const pack = GODOT_CONFIG['mainPack'] || exe + '.pck';
 	// the game's data under a new address after every build (build_web.py writes its hash here), so a browser
 	// never mixes a fresh page with a cached old .pck
-	const packUrl = pack + '?v=2057dadcd9';
+	const packUrl = pack + '?v=e3c91e75e6';
 	if (GODOT_CONFIG['fileSizes']) {
 		GODOT_CONFIG['fileSizes'][packUrl] = GODOT_CONFIG['fileSizes'][pack];
 	}
@@ -203,6 +203,40 @@ const GODOT_THREADS_ENABLED = false;
 			}
 		},
 	}));
+
+	// Sound on iPhone. Godot makes its AudioContext when the game starts, a moment after the tap, so Safari keeps it
+	// suspended, and Godot 4.3 resumes it on mouse and key input only, never on touches. So the page makes the
+	// context itself inside the tap (unlocked there) and hands it to Godot, and wakes every context the game has on
+	// each touch, click and key press.
+	const NativeAudioContext = window.AudioContext || window.webkitAudioContext;
+	const contexts = [];
+	let tapContext = null;
+	if (NativeAudioContext) {
+		const GameAudioContext = function (opts) {
+			let ctx = tapContext;
+			tapContext = null;
+			if (!ctx) {
+				ctx = opts === undefined ? new NativeAudioContext() : new NativeAudioContext(opts);
+			}
+			contexts.push(ctx);
+			return ctx;
+		};
+		GameAudioContext.prototype = NativeAudioContext.prototype;
+		window.AudioContext = GameAudioContext;
+		if (window.webkitAudioContext) {
+			window.webkitAudioContext = GameAudioContext;
+		}
+		const wake = function () {
+			contexts.forEach(function (ctx) {
+				if (ctx.state !== 'running' && ctx.state !== 'closed') {
+					ctx.resume().catch(function () {});
+				}
+			});
+		};
+		['touchend', 'pointerup', 'click', 'keydown'].forEach(function (type) {
+			document.addEventListener(type, wake, true);
+		});
+	}
 
 	let started = false;
 
@@ -224,6 +258,18 @@ const GODOT_THREADS_ENABLED = false;
 			}
 		} catch (e) {
 			// optional
+		}
+		if (NativeAudioContext) {
+			try {
+				tapContext = new NativeAudioContext();
+				tapContext.resume().catch(function () {});
+				const blip = tapContext.createBufferSource();      // older iOS unlocks on a sound started in the tap
+				blip.buffer = tapContext.createBuffer(1, 1, tapContext.sampleRate);
+				blip.connect(tapContext.destination);
+				blip.start(0);
+			} catch (e) {
+				tapContext = null;
+			}
 		}
 		if (/iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
 			// iPhone with the ring switch on silent mutes Web Audio unless a media element plays: a silent looping clip
