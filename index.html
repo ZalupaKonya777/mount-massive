@@ -159,7 +159,7 @@ body {
 
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":86437040,"index.wasm":35376909},"focusCanvas":true,"gdextensionLibs":[]};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":86437088,"index.wasm":35376909},"focusCanvas":true,"gdextensionLibs":[]};
 const GODOT_THREADS_ENABLED = false;
 
 (function () {
@@ -189,6 +189,12 @@ const GODOT_THREADS_ENABLED = false;
 
 	const exe = GODOT_CONFIG['executable'];
 	const pack = GODOT_CONFIG['mainPack'] || exe + '.pck';
+	// the game's data under a new address after every build (build_web.py writes its hash here), so a browser
+	// never mixes a fresh page with a cached old .pck
+	const packUrl = pack + '?v=2057dadcd9';
+	if (GODOT_CONFIG['fileSizes']) {
+		GODOT_CONFIG['fileSizes'][packUrl] = GODOT_CONFIG['fileSizes'][pack];
+	}
 	const engine = new Engine(Object.assign({}, GODOT_CONFIG, {
 		'onProgress': function (current, total) {
 			if (current > 0 && total > 0) {
@@ -270,7 +276,7 @@ const GODOT_THREADS_ENABLED = false;
 		});
 	}
 
-	Promise.all([engine.init(exe), engine.preloadFile(pack, pack)]).then(function () {
+	Promise.all([engine.init(exe), engine.preloadFile(packUrl, pack)]).then(function () {
 		text.textContent = '';
 		status.classList.add('ready');
 		start.addEventListener('click', go);
