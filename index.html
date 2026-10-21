@@ -159,7 +159,7 @@ body {
 
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":86434448,"index.wasm":35376909},"focusCanvas":true,"gdextensionLibs":[]};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":86437040,"index.wasm":35376909},"focusCanvas":true,"gdextensionLibs":[]};
 const GODOT_THREADS_ENABLED = false;
 
 (function () {
@@ -200,6 +200,13 @@ const GODOT_THREADS_ENABLED = false;
 
 	let started = false;
 
+	function ready() {
+		if (status.isConnected) {
+			status.remove();
+		}
+	}
+	window.mmGameReady = ready;
+
 	function go() {
 		if (started) {
 			return;
@@ -211,6 +218,23 @@ const GODOT_THREADS_ENABLED = false;
 			}
 		} catch (e) {
 			// optional
+		}
+		if (/iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
+			// iPhone with the ring switch on silent mutes Web Audio unless a media element plays: a silent looping clip
+			// puts the page into media playback, where the game's sound is heard (also on iOS older than 17).
+			try {
+				const quiet = new Audio('data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==');
+				quiet.loop = true;
+				quiet.setAttribute('playsinline', '');
+				quiet.play().catch(function () {});
+				document.addEventListener('visibilitychange', function () {
+					if (!document.hidden && quiet.paused) {
+						quiet.play().catch(function () {});
+					}
+				});
+			} catch (e) {
+				// optional
+			}
 		}
 		if (touch) {
 			// Android: fullscreen, then landscape (a lock only works in fullscreen). iPhone Safari has no
@@ -238,7 +262,9 @@ const GODOT_THREADS_ENABLED = false;
 		requestAnimationFrame(function () {
 			setTimeout(function () {
 				engine.start({ 'args': ['--main-pack', pack].concat(GODOT_CONFIG['args'] || []) }).then(function () {
-					status.remove();
+					// the game now compiles its shaders and decodes its sounds, then calls mmGameReady (main.gd)
+					text.textContent = 'Подготовка графики и звука… ещё немного';
+					setTimeout(ready, 180000);
 				}, fail);
 			}, 60);
 		});
