@@ -1,6 +1,6 @@
 # Mount Massive · Прибытие
 
-**[Играть в браузере](https://zalupakonya777.github.io/mount-massive/)** — iPhone / iPad (Safari), Android (Chrome), ПК.
+**[Играть в браузере](https://zalupakonya777.github.io/mount-massive/)** — iPhone / iPad (Safari), Android (Chrome).
 
 Поверните телефон горизонтально, нажмите **«Загрузить игру»**, затем **«Играть»** и **«Начать»**.
 После остановки машины: **ДЕЙСТВИЕ** — открыть папку, **Закрыть** — убрать письмо, ещё **ДЕЙСТВИЕ** — взять видеокамеру, затем **ДЕЙСТВИЕ** — выйти.
