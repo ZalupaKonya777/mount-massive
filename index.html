@@ -87,16 +87,43 @@ body {
 	border-radius: 10px;
 	background: rgba(255, 255, 255, 0.06);
 	color: #ece8dd;
+	font-family: inherit;
 	font-size: 18px;
 	cursor: pointer;
+	-webkit-appearance: none;
+	appearance: none;
 }
 
 #status.ready #status-start {
 	display: block;
 }
 
-#status.ready #status-bar {
+#status.ready #status-bar, #status.starting #status-bar {
 	display: none;
+}
+
+#status.ready {
+	cursor: pointer;
+}
+
+#status-spinner {
+	display: none;
+	width: 30px;
+	height: 30px;
+	border: 3px solid #2c2c2c;
+	border-top-color: #b8b19a;
+	border-radius: 50%;
+	animation: status-spin 0.9s linear infinite;
+}
+
+#status.starting #status-spinner {
+	display: block;
+}
+
+@keyframes status-spin {
+	to {
+		transform: rotate(360deg);
+	}
 }
 
 #status-notice {
@@ -123,8 +150,9 @@ body {
 		<div id="status">
 			<h1>MOUNT MASSIVE</h1>
 			<div id="status-bar"><div id="status-fill"></div></div>
+			<div id="status-spinner"></div>
 			<div id="status-text">Загрузка…</div>
-			<div id="status-start">Коснитесь, чтобы начать</div>
+			<button id="status-start" type="button">Коснитесь, чтобы начать</button>
 			<div id="status-tip">Лучше в наушниках</div>
 			<div id="status-notice"></div>
 		</div>
@@ -145,7 +173,7 @@ const GODOT_THREADS_ENABLED = false;
 
 	function fail(err) {
 		console.error(err);
-		status.classList.remove('ready');
+		status.classList.remove('ready', 'starting');
 		document.getElementById('status-bar').style.display = 'none';
 		text.textContent = 'Игра не запустилась';
 		notice.textContent = (err && err.message) ? err.message : String(err);
@@ -170,9 +198,19 @@ const GODOT_THREADS_ENABLED = false;
 		},
 	}));
 
+	let started = false;
+
 	function go() {
-		if (navigator.audioSession) {
-			navigator.audioSession.type = 'playback';      // iPhone (Safari 17+): play even with the silent switch on
+		if (started) {
+			return;
+		}
+		started = true;
+		try {
+			if (navigator.audioSession) {
+				navigator.audioSession.type = 'playback';  // iPhone (Safari 17+): play even with the silent switch on
+			}
+		} catch (e) {
+			// optional
 		}
 		if (touch) {
 			// Android: fullscreen, then landscape (a lock only works in fullscreen). iPhone Safari has no
@@ -193,16 +231,24 @@ const GODOT_THREADS_ENABLED = false;
 			}
 		}
 		status.classList.remove('ready');
-		text.textContent = 'Запуск…';
-		engine.start({ 'args': ['--main-pack', pack].concat(GODOT_CONFIG['args'] || []) }).then(function () {
-			status.remove();
-		}, fail);
+		status.classList.add('starting');
+		text.textContent = 'Запуск… Уровень грузится целиком: на телефоне это до минуты, экран пока может замереть';
+		// Godot loads the whole level in one go and the page stops drawing until that is done: let the message and
+		// the spinner (it turns on its own meanwhile) reach the screen first, or the tap looks ignored.
+		requestAnimationFrame(function () {
+			setTimeout(function () {
+				engine.start({ 'args': ['--main-pack', pack].concat(GODOT_CONFIG['args'] || []) }).then(function () {
+					status.remove();
+				}, fail);
+			}, 60);
+		});
 	}
 
 	Promise.all([engine.init(exe), engine.preloadFile(pack, pack)]).then(function () {
 		text.textContent = '';
 		status.classList.add('ready');
-		status.addEventListener('click', go, { once: true });
+		start.addEventListener('click', go);
+		status.addEventListener('click', go);
 	}, fail);
 }());
 		</script>
