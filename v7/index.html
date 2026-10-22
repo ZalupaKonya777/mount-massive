@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ru">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, viewport-fit=cover">
+		<title>Mount Massive — Outlast opening reconstruction (prototype)</title>
+		<!-- Page shell of the web build (tools/web/build_web.py). Unlike Godot's default page it downloads the game
+		     first and starts it on a tap: the tap lets the browser play sound from the first second (iPhone keeps
+		     the page silent until the player touches it) and, on Android, switches to fullscreen landscape. -->
+		<style>
+html, body, #canvas {
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+body {
+	color: #ddd;
+	background-color: black;
+	overflow: hidden;
+	touch-action: none;
+	overscroll-behavior: none;
+	-webkit-user-select: none;
+	user-select: none;
+	-webkit-touch-callout: none;
+	-webkit-tap-highlight-color: transparent;
+}
+
+#canvas {
+	display: block;
+}
+
+#canvas:focus {
+	outline: none;
+}
+
+#status {
+	position: absolute;
+	inset: 0;
+	z-index: 5;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	gap: 16px;
+	padding: 24px;
+	background: #000;
+	color: #c9c6bc;
+	font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+	text-align: center;
+	cursor: default;
+}
+
+#status h1 {
+	margin: 0;
+	font-size: 22px;
+	font-weight: 600;
+	letter-spacing: 0.18em;
+	color: #e8e4d9;
+}
+
+#status-bar {
+	width: min(60vw, 420px);
+	height: 6px;
+	border-radius: 3px;
+	background: #262626;
+	overflow: hidden;
+}
+
+#status-fill {
+	width: 0;
+	height: 100%;
+	background: #b8b19a;
+	transition: width 0.2s;
+}
+
+#status-text, #status-tip {
+	min-height: 1.4em;
+	font-size: 14px;
+	color: #8e8b81;
+}
+
+#status-start {
+	display: none;
+	padding: 14px 30px;
+	border: 1px solid #7a776d;
+	border-radius: 10px;
+	background: rgba(255, 255, 255, 0.06);
+	color: #ece8dd;
+	font-family: inherit;
+	font-size: 18px;
+	cursor: pointer;
+	-webkit-appearance: none;
+	appearance: none;
+}
+
+#status.ready #status-start {
+	display: block;
+}
+
+#status.ready #status-bar, #status.starting #status-bar {
+	display: none;
+}
+
+#status.ready {
+	cursor: pointer;
+}
+
+#status-spinner {
+	display: none;
+	width: 30px;
+	height: 30px;
+	border: 3px solid #2c2c2c;
+	border-top-color: #b8b19a;
+	border-radius: 50%;
+	animation: status-spin 0.9s linear infinite;
+}
+
+#status.starting #status-spinner {
+	display: block;
+}
+
+@keyframes status-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+#status-notice {
+	display: none;
+	max-width: 520px;
+	padding: 14px 18px;
+	border: 1px solid #9b3943;
+	border-radius: 8px;
+	background: #3d2328;
+	color: #eadada;
+	font-size: 15px;
+	line-height: 1.4;
+	white-space: pre-line;
+}
+		</style>
+		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
+<link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Mount Massive"><meta name="theme-color" content="#000000"><style>html,body{overscroll-behavior:none;touch-action:none}#rotate-hint{display:none;position:fixed;inset:0;z-index:10;background:#000;color:#ccc;font:18px sans-serif;align-items:center;justify-content:center;text-align:center;padding:24px}@media (orientation:portrait) and (pointer:coarse){#rotate-hint{display:flex}}</style><script>addEventListener('DOMContentLoaded',function(){var d=document.createElement('div');d.id='rotate-hint';d.textContent='Поверните телефон горизонтально';document.body.appendChild(d);});</script>
+	</head>
+	<body>
+		<canvas id="canvas">Браузер не поддерживает canvas.</canvas>
+		<noscript>Для игры нужен JavaScript.</noscript>
+
+		<div id="status">
+			<h1>MOUNT MASSIVE</h1>
+			<div id="status-bar"><div id="status-fill"></div></div>
+			<div id="status-spinner"></div>
+			<div id="status-text">Загрузка…</div>
+			<button id="status-start" type="button">Коснитесь, чтобы начать</button>
+			<div id="status-tip">Лучше в наушниках</div>
+			<div id="status-notice"></div>
+		</div>
+
+		<script src="index.js"></script>
+		<script>
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":86437344,"index.wasm":35376909},"focusCanvas":true,"gdextensionLibs":[]};
+const GODOT_THREADS_ENABLED = false;
+
+(function () {
+	const status = document.getElementById('status');
+	const fill = document.getElementById('status-fill');
+	const text = document.getElementById('status-text');
+	const start = document.getElementById('status-start');
+	const notice = document.getElementById('status-notice');
+	const touch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+	start.textContent = touch ? 'Коснитесь, чтобы начать' : 'Нажмите, чтобы начать';
+
+	function fail(err) {
+		console.error(err);
+		status.classList.remove('ready', 'starting');
+		document.getElementById('status-bar').style.display = 'none';
+		text.textContent = 'Игра не запустилась';
+		notice.textContent = (err && err.message) ? err.message : String(err);
+		notice.style.display = 'block';
+	}
+
+	const missing = Engine.getMissingFeatures({ threads: GODOT_THREADS_ENABLED });
+	if (missing.length !== 0) {
+		fail('Браузеру не хватает того, что нужно игре:\n' + missing.join('\n')
+				+ '\n\nОбновите браузер: нужен WebGL 2 (Safari 15+, Chrome 56+).');
+		return;
+	}
+
+	const exe = GODOT_CONFIG['executable'];
+	const pack = GODOT_CONFIG['mainPack'] || exe + '.pck';
+	// the game's data under a new address after every build (build_web.py writes its hash here), so a browser
+	// never mixes a fresh page with a cached old .pck
+	const packUrl = pack + '?v=dc2af28791';
+	if (GODOT_CONFIG['fileSizes']) {
+		GODOT_CONFIG['fileSizes'][packUrl] = GODOT_CONFIG['fileSizes'][pack];
+	}
+	const engine = new Engine(Object.assign({}, GODOT_CONFIG, {
+		'onProgress': function (current, total) {
+			if (current > 0 && total > 0) {
+				fill.style.width = (100 * current / total).toFixed(1) + '%';
+				text.textContent = 'Загрузка: ' + (current / 1048576).toFixed(0) + ' из ' + (total / 1048576).toFixed(0) + ' МБ';
+			}
+		},
+	}));
+
+	// Sound on iPhone. Godot makes its AudioContext when the game starts, a moment after the tap, so Safari keeps it
+	// suspended, and Godot 4.3 resumes it on mouse and key input only, never on touches. So the page makes the
+	// context itself inside the tap (unlocked there) and hands it to Godot, and wakes every context the game has on
+	// each touch, click and key press.
+	const NativeAudioContext = window.AudioContext || window.webkitAudioContext;
+	const contexts = [];
+	let tapContext = null;
+	if (NativeAudioContext) {
+		const GameAudioContext = function (opts) {
+			let ctx = tapContext;
+			tapContext = null;
+			if (!ctx) {
+				ctx = opts === undefined ? new NativeAudioContext() : new NativeAudioContext(opts);
+			}
+			contexts.push(ctx);
+			return ctx;
+		};
+		GameAudioContext.prototype = NativeAudioContext.prototype;
+		window.AudioContext = GameAudioContext;
+		if (window.webkitAudioContext) {
+			window.webkitAudioContext = GameAudioContext;
+		}
+		const wake = function () {
+			contexts.forEach(function (ctx) {
+				if (ctx.state !== 'running' && ctx.state !== 'closed') {
+					ctx.resume().catch(function () {});
+				}
+			});
+		};
+		['touchend', 'pointerup', 'click', 'keydown'].forEach(function (type) {
+			document.addEventListener(type, wake, true);
+		});
+	}
+
+	let started = false;
+
+	function ready() {
+		if (status.isConnected) {
+			status.remove();
+		}
+	}
+	window.mmGameReady = ready;
+
+	function go() {
+		if (started) {
+			return;
+		}
+		started = true;
+		try {
+			if (navigator.audioSession) {
+				navigator.audioSession.type = 'playback';  // iPhone (Safari 17+): play even with the silent switch on
+			}
+		} catch (e) {
+			// optional
+		}
+		if (NativeAudioContext) {
+			try {
+				tapContext = new NativeAudioContext();
+				tapContext.resume().catch(function () {});
+				const blip = tapContext.createBufferSource();      // older iOS unlocks on a sound started in the tap
+				blip.buffer = tapContext.createBuffer(1, 1, tapContext.sampleRate);
+				blip.connect(tapContext.destination);
+				blip.start(0);
+			} catch (e) {
+				tapContext = null;
+			}
+		}
+		if (/iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
+			// iPhone with the ring switch on silent mutes Web Audio unless a media element plays: a silent looping clip
+			// puts the page into media playback, where the game's sound is heard (also on iOS older than 17).
+			try {
+				const quiet = new Audio('data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==');
+				quiet.loop = true;
+				quiet.setAttribute('playsinline', '');
+				quiet.play().catch(function () {});
+				document.addEventListener('visibilitychange', function () {
+					if (!document.hidden && quiet.paused) {
+						quiet.play().catch(function () {});
+					}
+				});
+			} catch (e) {
+				// optional
+			}
+		}
+		if (touch) {
+			// Android: fullscreen, then landscape (a lock only works in fullscreen). iPhone Safari has no
+			// fullscreen for pages: there the game fills the window, or the whole screen from the home screen.
+			const el = document.documentElement;
+			const request = el.requestFullscreen || el.webkitRequestFullscreen;
+			try {
+				const p = request ? request.call(el, { navigationUI: 'hide' }) : null;
+				if (p && p.then) {
+					p.then(function () {
+						if (screen.orientation && screen.orientation.lock) {
+							screen.orientation.lock('landscape').catch(function () {});
+						}
+					}).catch(function () {});
+				}
+			} catch (e) {
+				// no fullscreen here
+			}
+		}
+		status.classList.remove('ready');
+		status.classList.add('starting');
+		text.textContent = 'Запуск… Уровень грузится целиком: на телефоне это до минуты, экран пока может замереть';
+		// Godot loads the whole level in one go and the page stops drawing until that is done: let the message and
+		// the spinner (it turns on its own meanwhile) reach the screen first, or the tap looks ignored.
+		requestAnimationFrame(function () {
+			setTimeout(function () {
+				engine.start({ 'args': ['--main-pack', pack].concat(GODOT_CONFIG['args'] || []) }).then(function () {
+					// the game now compiles its shaders and decodes its sounds, then calls mmGameReady (main.gd)
+					text.textContent = 'Подготовка графики и звука… ещё немного';
+					setTimeout(ready, 180000);
+				}, fail);
+			}, 60);
+		});
+	}
+
+	Promise.all([engine.init(exe), engine.preloadFile(packUrl, pack)]).then(function () {
+		text.textContent = '';
+		status.classList.add('ready');
+		start.addEventListener('click', go);
+		status.addEventListener('click', go);
+	}, fail);
+}());
+		</script>
+	</body>
+</html>
+
